@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rastrea Proveedores — Asopiel</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F2;
+    --surface: #FFFFFF;
+    --surface-2: #F0EDE8;
+    --border: #DDD9D3;
+    --border-strong: #C8C3BB;
+    --text: #1A1816;
+    --text-2: #5C574F;
+    --text-3: #9B9590;
+    --accent: #1B4F8A;
+    --accent-bg: #EAF0F8;
+    --accent-border: #B8CDE6;
+    --success: #1A6B3C;
+    --success-bg: #E8F5EE;
+    --danger: #8B2020;
+    --danger-bg: #F7EAEA;
+    --warning: #7A5A00;
+    --warning-bg: #FBF4E0;
+    --radius: 8px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-logo span { color: var(--accent); }
+  .header-sub { font-size: 12px; color: var(--text-3); margin-left: auto; }
+
+  /* MAIN */
+  .main { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+  /* STATS */
+  .stats-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; flex: 1; min-width: 120px; }
+  .stat-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--text); }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.success { color: var(--success); }
+  .stat-value.warning { color: var(--warning); }
+
+  /* SEARCH PANEL */
+  .search-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .search-panel-top { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+  .search-panel label { display: block; font-size: 11px; font-weight: 500; color: var(--text-2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .search-panel select, .search-panel input {
+    height: 36px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--surface); color: var(--text); font-size: 13px; padding: 0 10px; font-family: var(--font);
+  }
+  .search-panel select:focus, .search-panel input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .search-group { flex: 1; min-width: 160px; }
+
+  /* CATEGORIAS CHIPS */
+  .cat-section-label { font-size: 11px; font-weight: 500; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .cat-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .cat-chip {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-2); font-family: var(--font); transition: all 0.1s; white-space: nowrap;
+  }
+  .cat-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .cat-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cat-chip.nueva { border-style: dashed; color: var(--text-3); }
+  .cat-chip.nueva:hover { border-color: var(--success); color: var(--success); background: var(--success-bg); }
+
+  /* BTN */
+  .btn {
+    height: 36px; padding: 0 16px; border-radius: var(--radius); border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: background 0.12s;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #153d6e; }
+  .btn-danger { color: var(--danger); border-color: #E0A0A0; }
+  .btn-danger:hover { background: var(--danger-bg); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; margin-bottom: 16px; width: fit-content; }
+  .tab { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--text-2); font-family: var(--font); transition: all 0.1s; }
+  .tab.active { background: var(--surface-2); color: var(--text); }
+
+  /* EXPORT BAR */
+  .export-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .export-info { font-size: 13px; color: var(--text-2); }
+  .export-info strong { color: var(--text); }
+
+  /* SECTION TITLE */
+  .section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-3); margin-bottom: 12px; }
+
+  /* CARDS */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .prov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
+  .prov-card:hover { border-color: var(--border-strong); }
+  .prov-card.added { border-color: #90C9A8; }
+
+  .card-header { padding: 14px 16px 10px; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid var(--border); }
+  .prov-initial { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex-shrink: 0; background: var(--accent-bg); color: var(--accent); }
+  .card-nombre { font-weight: 600; font-size: 15px; color: var(--text); line-height: 1.2; }
+  .card-sede { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  .cat-badge {
+    margin-left: auto; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;
+    background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); flex-shrink: 0; white-space: nowrap;
+  }
+
+  .card-body { padding: 10px 16px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 8px; }
+  .field-row { display: flex; flex-direction: column; gap: 1px; }
+  .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-3); font-weight: 500; }
+  .field-value { font-size: 12px; color: var(--text); }
+  .field-value a { color: var(--accent); text-decoration: none; }
+  .field-value a:hover { text-decoration: underline; }
+  .field-full { grid-column: 1 / -1; }
+
+  .potencial-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .pot-alto { background: var(--success-bg); color: var(--success); }
+  .pot-medio { background: var(--warning-bg); color: var(--warning); }
+  .pot-bajo { background: var(--surface-2); color: var(--text-2); }
+
+  .fuerte-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 500; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border);
+  }
+
+  .card-observaciones { background: var(--accent-bg); border-radius: 6px; padding: 8px 10px; font-size: 12px; color: var(--text-2); margin-top: 8px; border-left: 3px solid var(--accent-border); }
+
+  .card-motivo-descarte { background: var(--danger-bg); border-radius: 6px; padding: 8px 10px; font-size: 12px; color: var(--danger); margin-top: 8px; border-left: 3px solid #E0A0A0; display: flex; align-items: flex-start; gap: 6px; }
+  .motivo-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; color: var(--danger); opacity: 0.7; white-space: nowrap; margin-top: 1px; }
+
+  .card-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 6px; align-items: center; }
+  .estado-select { flex: 1; height: 30px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; padding: 0 6px; background: var(--surface); color: var(--text-2); font-family: var(--font); }
+  .btn-sm { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-2); cursor: pointer; font-family: var(--font); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; transition: all 0.1s; }
+  .btn-sm:hover { background: var(--surface-2); }
+  .btn-sm.add { color: var(--success); border-color: #90C9A8; }
+  .btn-sm.add:hover { background: var(--success-bg); }
+  .btn-sm.discard { color: var(--danger); border-color: #E0A0A0; }
+  .btn-sm.discard:hover { background: var(--danger-bg); }
+  .btn-sm.remove { color: var(--danger); }
+
+  /* LOADING */
+  .loading-overlay { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px 24px; text-align: center; display: none; }
+  .loading-overlay.active { display: block; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-msg { color: var(--text-2); font-size: 14px; }
+
+  /* EMPTY */
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text-3); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-title { font-size: 15px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
+
+  /* MODAL MOTIVO DESCARTE */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal { background: var(--surface); border-radius: 14px; padding: 24px; width: 100%; max-width: 440px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); transform: translateY(8px); transition: transform 0.15s; }
+  .modal-overlay.active .modal { transform: translateY(0); }
+  .modal-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text-3); margin-bottom: 16px; }
+  .modal-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); margin-bottom: 8px; }
+  .motivo-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .motivo-option { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 13px; color: var(--text-2); transition: all 0.1s; background: var(--surface); font-family: var(--font); text-align: left; }
+  .motivo-option:hover { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
+  .motivo-option.selected { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); font-weight: 500; }
+  .motivo-check { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+  .motivo-option.selected .motivo-check { background: var(--danger); border-color: var(--danger); }
+  .motivo-option.selected .motivo-check::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: white; display: block; }
+  .motivo-libre { width: 100%; border: 1px solid var(--border-strong); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: var(--font); color: var(--text); background: var(--surface); resize: none; height: 64px; margin-bottom: 16px; transition: border-color 0.1s; }
+  .motivo-libre:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .motivo-libre::placeholder { color: var(--text-3); }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* MODAL NUEVA CATEGORIA */
+  .modal-nueva { background: var(--surface); border-radius: 14px; padding: 24px; width: 100%; max-width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); transform: translateY(8px); transition: transform 0.15s; }
+  .modal-overlay.active .modal-nueva { transform: translateY(0); }
+  .input-nueva { width: 100%; height: 40px; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0 12px; font-size: 14px; font-family: var(--font); color: var(--text); margin-bottom: 16px; }
+  .input-nueva:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* INSIGHT */
+  .insight-bar { background: var(--warning-bg); border: 1px solid #D4BE70; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--warning); display: flex; align-items: flex-start; gap: 10px; }
+  .insight-icon { font-size: 16px; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    .header { padding: 12px 16px; }
+    .main { padding: 16px 12px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .field-grid { grid-template-columns: 1fr; }
+    .search-panel-top { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">Rastrea<span>Proveedores</span></div>
+  <div style="font-size:12px;font-weight:500;color:var(--text-3);background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:20px;padding:4px 12px;">Asopiel</div>
+  <div class="header-sub" id="headerDate"></div>
+</header>
+
+<!-- MODAL DESCARTE -->
+<div class="modal-overlay" id="modalDescarte">
+  <div class="modal">
+    <div class="modal-title">¿Por qué descartamos este proveedor?</div>
+    <div class="modal-sub" id="modalProvNombre"></div>
+    <div class="modal-section-label">Selecciona el motivo principal</div>
+    <div class="motivo-options">
+      <button class="motivo-option" data-motivo="Ya tiene acuerdo con Asopiel o con otra asociación" onclick="selectMotivo(this)"><span class="motivo-check"></span>Ya tiene acuerdo con Asopiel u otra asociación</button>
+      <button class="motivo-option" data-motivo="Precios no competitivos para las empresas de Asopiel" onclick="selectMotivo(this)"><span class="motivo-check"></span>Precios no competitivos para los asociados</button>
+      <button class="motivo-option" data-motivo="No ofrece condiciones especiales para colectivos o asociaciones" onclick="selectMotivo(this)"><span class="motivo-check"></span>No trabaja con colectivos ni asociaciones</button>
+      <button class="motivo-option" data-motivo="Cobertura geográfica insuficiente para Ubrique/Cádiz" onclick="selectMotivo(this)"><span class="motivo-check"></span>Cobertura insuficiente en Ubrique / Cádiz</button>
+      <button class="motivo-option" data-motivo="Calidad o servicio por debajo del nivel requerido" onclick="selectMotivo(this)"><span class="motivo-check"></span>Calidad o servicio insuficiente</button>
+      <button class="motivo-option" data-motivo="Empresa inactiva o fuera del mercado" onclick="selectMotivo(this)"><span class="motivo-check"></span>Empresa inactiva o fuera del mercado</button>
+    </div>
+    <div class="modal-section-label">Nota adicional (opcional)</div>
+    <textarea class="motivo-libre" id="motivoLibre" placeholder="Cualquier detalle útil para futuras búsquedas…"></textarea>
+    <div class="modal-footer">
+      <button class="btn" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" style="background:var(--danger);border-color:var(--danger)" onclick="confirmarDescarte()">Confirmar descarte</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA CATEGORIA -->
+<div class="modal-overlay" id="modalCategoria">
+  <div class="modal-nueva">
+    <div class="modal-title" style="margin-bottom:8px">Nueva categoría</div>
+    <div class="modal-sub">Escribe el nombre de la nueva categoría de proveedor.</div>
+    <input class="input-nueva" id="inputNuevaCat" placeholder="Ej: Suministros de agua, Energía solar…" maxlength="50">
+    <div class="modal-footer">
+      <button class="btn" onclick="cerrarModalCat()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarNuevaCat()">Añadir categoría</button>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-label">Detectados hoy</div><div class="stat-value accent" id="statHoy">0</div></div>
+    <div class="stat-card"><div class="stat-label">En lista total</div><div class="stat-value success" id="statTotal">0</div></div>
+    <div class="stat-card"><div class="stat-label">Potencial alto</div><div class="stat-value" id="statAlto">0</div></div>
+    <div class="stat-card"><div class="stat-label">Acuerdos activos</div><div class="stat-value warning" id="statAcuerdos">0</div></div>
+  </div>
+
+  <!-- SEARCH PANEL -->
+  <div class="search-panel">
+    <div class="search-panel-top">
+      <div class="search-group">
+        <label>Número de resultados</label>
+        <select id="numResultados">
+          <option value="6">6 proveedores</option>
+          <option value="8" selected>8 proveedores</option>
+          <option value="10">10 proveedores</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="buscarProveedores()" id="btnBuscar" style="margin-top:20px">
+        ⟳ Buscar proveedores
+      </button>
+    </div>
+    <div class="cat-section-label">Categoría de búsqueda</div>
+    <div class="cat-chips" id="catChips"></div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loadingMsg">Buscando proveedores…</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabsContainer" style="display:none">
+    <button class="tab active" onclick="switchTab('hoy')" id="tabHoy">Detectados hoy</button>
+    <button class="tab" onclick="switchTab('lista')" id="tabLista">Mi lista (<span id="tabListaCount">0</span>)</button>
+    <button class="tab" onclick="switchTab('descartados')" id="tabDescartados">Descartados (<span id="tabDescartadosCount">0</span>)</button>
+  </div>
+
+  <!-- EXPORT BARS -->
+  <div class="export-bar" id="exportBar" style="display:none">
+    <div class="export-info"><strong id="exportCount">0</strong> proveedores en lista</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+      <button class="btn btn-danger" onclick="limpiarLista()">Limpiar lista</button>
+    </div>
+  </div>
+  <div class="export-bar" id="exportBarDesc" style="display:none">
+    <div class="export-info"><strong id="exportCountDesc">0</strong> proveedores descartados</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="exportarCSVDescartados()">⬇ Exportar descartados CSV</button>
+    </div>
+  </div>
+
+  <div id="sectionTitle" class="section-title" style="display:none"></div>
+  <div class="cards-grid" id="cardsGrid"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">Selecciona una categoría y pulsa "Buscar proveedores"</div>
+    <div style="font-size:13px;margin-top:6px">La IA buscará proveedores reales con los que Asopiel pueda negociar acuerdos de colaboración.</div>
+  </div>
+
+</main>
+
+<script>
+const WORKER_URL = 'https://marcaradar-proxy.antoniol-ardila.workers.dev';
+
+// Categorías iniciales
+const CATS_INICIALES = [
+  { id: 'epi', label: 'EPIs', grupo: 'Seguridad' },
+  { id: 'calzado', label: 'Calzado de trabajo', grupo: 'Seguridad' },
+  { id: 'prl', label: 'Prevención de riesgos / PRL', grupo: 'Seguridad' },
+  { id: 'vestuario', label: 'Vestuario laboral', grupo: 'Vestuario' },
+  { id: 'oficina', label: 'Suministros de oficina', grupo: 'Suministros' },
+  { id: 'agua', label: 'Agua para oficinas', grupo: 'Suministros' },
+  { id: 'limpieza', label: 'Productos de limpieza', grupo: 'Suministros' },
+  { id: 'combustible', label: 'Combustible / carburante', grupo: 'Energía' },
+  { id: 'energia', label: 'Energía eléctrica', grupo: 'Energía' },
+  { id: 'telco', label: 'Telecomunicaciones', grupo: 'Tecnología' },
+  { id: 'software', label: 'Software y herramientas digitales', grupo: 'Tecnología' },
+  { id: 'financiero', label: 'Servicios financieros y banca', grupo: 'Servicios' },
+  { id: 'seguros', label: 'Seguros', grupo: 'Servicios' },
+  { id: 'gestoria', label: 'Gestoría / asesoría fiscal', grupo: 'Servicios' },
+  { id: 'formacion', label: 'Formación y desarrollo', grupo: 'Servicios' },
+];
+
+// Proveedores iniciales del Excel (vestuario laboral)
+const PROVEEDORES_INICIALES = [
+  { id:'init_01', nombre:'Velilla Group', sede:'Sevilla', categoria:'Vestuario laboral', web:'https://www.velilla-group.com', email:'atencioncliente@velilla-group.com', telefono:'916 699 625', punto_fuerte:'Precio + Cobertura', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Alto', estado:'Sin contactar', observaciones:'Fabricante líder nacional', _fromExcel: true },
+  { id:'init_02', nombre:'Gor Factory (Roly)', sede:'Murcia', categoria:'Vestuario laboral', web:'https://www.roly.eu', email:'roly.madrid@gorfactory.es', telefono:'916 53 03 99', punto_fuerte:'Precio + Cobertura', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Alto', estado:'Sin contactar', observaciones:'Gran capacidad de stock nacional', _fromExcel: true },
+  { id:'init_03', nombre:'Workteam', sede:'León', categoria:'Vestuario laboral', web:'https://www.workteam.es', email:'info@workteam.com', telefono:'987 200 800', punto_fuerte:'Especialización', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Medio', estado:'Sin contactar', observaciones:'Especialistas en alta visibilidad', _fromExcel: true },
+  { id:'init_04', nombre:'Valento', sede:'Valencia', categoria:'Vestuario laboral', web:'https://www.valento.es', email:'', telefono:'', punto_fuerte:'Calidad', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Medio', estado:'Sin contactar', observaciones:'Fabricación y personalización', _fromExcel: true },
+  { id:'init_05', nombre:'Juba', sede:'La Rioja', categoria:'Vestuario laboral', web:'https://www.jubappe.com', email:'', telefono:'', punto_fuerte:'Especialización', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Alto', estado:'Sin contactar', observaciones:'EPI y vestuario técnico', _fromExcel: true },
+  { id:'init_06', nombre:'Delta Plus', sede:'España', categoria:'Vestuario laboral', web:'https://www.deltaplus.eu', email:'', telefono:'', punto_fuerte:'Cobertura + Especialización', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Alto', estado:'Sin contactar', observaciones:'Proveedor europeo consolidado, EPI y vestuario', _fromExcel: true },
+  { id:'init_07', nombre:'Grupo Anjo', sede:'Madrid', categoria:'Vestuario laboral', web:'https://grupoanjo.com/', email:'info@grupoanjo.com', telefono:'674 153 531', punto_fuerte:'Calidad', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Medio', estado:'Sin contactar', observaciones:'Uniformidad laboral de moda', _fromExcel: true },
+  { id:'init_08', nombre:'Cofra', sede:'Italia / España', categoria:'Vestuario laboral', web:'https://www.cofra.it', email:'', telefono:'', punto_fuerte:'Calidad + Especialización', condiciones_colectivos:'Pendiente de consultar', min_pedido:'', plazo_entrega:'', responsable:'', cargo:'', email_responsable:'', linkedin_responsable:'', potencial:'Medio', estado:'Sin contactar', observaciones:'Complemento estratégico — también calzado', _fromExcel: true },
+];
+
+let currentTab = 'hoy';
+let proveedoresHoy = [];
+let catActiva = 'vestuario';
+let loadingInterval = null;
+let _motivoPendienteId = null;
+let _motivoSeleccionado = null;
+
+const LOADING_MSGS = [
+  'Consultando directorios de proveedores…',
+  'Identificando empresas con potencial de acuerdo…',
+  'Analizando condiciones para colectivos…',
+  'Elaborando fichas de contacto…'
+];
+
+// ---- CATEGORÍAS ----
+function getCategorias() {
+  try {
+    const extra = localStorage.getItem('rastrea_cats_extra');
+    const extras = extra ? JSON.parse(extra) : [];
+    return [...CATS_INICIALES, ...extras];
+  } catch { return CATS_INICIALES; }
+}
+
+function saveCatExtra(cat) {
+  try {
+    const extra = localStorage.getItem('rastrea_cats_extra');
+    const extras = extra ? JSON.parse(extra) : [];
+    extras.push(cat);
+    localStorage.setItem('rastrea_cats_extra', JSON.stringify(extras));
+  } catch {}
+}
+
+function renderCatChips() {
+  const cats = getCategorias();
+  const container = document.getElementById('catChips');
+  container.innerHTML = cats.map(c => `
+    <button class="cat-chip ${c.id === catActiva ? 'active' : ''}" onclick="seleccionarCat('${c.id}')">${c.label}</button>
+  `).join('') + `<button class="cat-chip nueva" onclick="abrirModalCat()">+ Nueva categoría</button>`;
+}
+
+function seleccionarCat(id) {
+  catActiva = id;
+  renderCatChips();
+}
+
+function getLabelCat(id) {
+  return getCategorias().find(c => c.id === id)?.label || id;
+}
+
+// ---- STORAGE ----
+function getLista() {
+  try { const d = localStorage.getItem('rastrea_lista'); return d ? JSON.parse(d) : []; } catch { return []; }
+}
+function saveLista(l) { try { localStorage.setItem('rastrea_lista', JSON.stringify(l)); } catch {} }
+function getDescartados() {
+  try { const d = localStorage.getItem('rastrea_descartados'); return d ? JSON.parse(d) : []; } catch { return []; }
+}
+function saveDescartados(l) { try { localStorage.setItem('rastrea_descartados', JSON.stringify(l)); } catch {} }
+
+function initData() {
+  // Cargar proveedores iniciales si la lista está vacía
+  const lista = getLista();
+  if (!lista.length) {
+    saveLista(PROVEEDORES_INICIALES);
+  }
+}
+
+function updateStats() {
+  const lista = getLista();
+  const desc = getDescartados();
+  const altos = lista.filter(p => p.potencial === 'Alto').length;
+  const acuerdos = lista.filter(p => p.estado === 'Acuerdo firmado').length;
+  document.getElementById('statHoy').textContent = proveedoresHoy.length;
+  document.getElementById('statTotal').textContent = lista.length;
+  document.getElementById('statAlto').textContent = altos;
+  document.getElementById('statAcuerdos').textContent = acuerdos;
+  document.getElementById('tabListaCount').textContent = lista.length;
+  document.getElementById('tabDescartadosCount').textContent = desc.length;
+  document.getElementById('exportCount').textContent = lista.length;
+  document.getElementById('exportCountDesc').textContent = desc.length;
+}
+
+// ---- CONTEXTO DESCARTADOS ----
+function buildContextoDescartados() {
+  const desc = getDescartados();
+  const conMotivo = desc.filter(d => d.motivo_descarte).slice(-15);
+  if (!conMotivo.length) return '';
+  const resumen = conMotivo.map(p => `- ${p.nombre} (${p.categoria}): ${p.motivo_descarte}${p.nota_descarte ? ' — ' + p.nota_descarte : ''}`).join('\n');
+  return `\n\nCONTEXTO — Proveedores ya descartados (evita sugerir empresas similares):\n${resumen}`;
+}
+
+// ---- BÚSQUEDA ----
+async function buscarProveedores() {
+  const cat = getLabelCat(catActiva);
+  const num = document.getElementById('numResultados').value;
+
+  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('cardsGrid').innerHTML = '';
+  document.getElementById('tabsContainer').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('exportBar').style.display = 'none';
+  document.getElementById('exportBarDesc').style.display = 'none';
+  document.getElementById('sectionTitle').style.display = 'none';
+
+  let msgIdx = 0;
+  document.getElementById('loadingMsg').textContent = LOADING_MSGS[0];
+  loadingInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % LOADING_MSGS.length;
+    document.getElementById('loadingMsg').textContent = LOADING_MSGS[msgIdx];
+  }, 2200);
+
+  const contexto = buildContextoDescartados();
+
+  const prompt = `Eres un experto en compras y aprovisionamiento empresarial en España. Asopiel es la Asociación de Empresarios del Sector de la Piel de Ubrique (Cádiz, Andalucía), que quiere negociar acuerdos marco de compras colectivas para sus empresas asociadas.
+
+Necesito un listado de exactamente ${num} proveedores reales españoles o con fuerte presencia en España especializados en: ${cat}.
+
+El objetivo es identificar proveedores que puedan ofrecer condiciones especiales (descuentos por volumen, facturación centralizada, servicio dedicado) a una asociación empresarial del sector de la marroquinería y la piel.
+
+Devuelve SOLO un JSON válido (sin markdown, sin explicaciones) con este formato exacto:
+
+[
+  {
+    "nombre": "Nombre comercial del proveedor",
+    "empresa": "Razón social si difiere del nombre comercial, o vacío",
+    "sede": "Ciudad o provincia principal",
+    "categoria": "${cat}",
+    "web": "https://www.web.com o vacío",
+    "email": "email público de contacto o vacío",
+    "telefono": "teléfono público o vacío",
+    "punto_fuerte": "Precio | Calidad | Servicio | Especialización | Cobertura | Colectivos (puede ser combinado, ej: Precio + Cobertura)",
+    "condiciones_colectivos": "Descripción breve de si ofrecen o se sabe que ofrecen condiciones para asociaciones o colectivos empresariales, o 'Sin información pública'",
+    "min_pedido": "Mínimo de pedido aproximado o vacío si no se conoce",
+    "plazo_entrega": "Plazo habitual o vacío",
+    "responsable": "Nombre del responsable comercial o director si se conoce, o vacío",
+    "cargo": "Cargo del responsable o vacío",
+    "email_responsable": "Email directo del responsable si existe, o vacío",
+    "linkedin_responsable": "URL de LinkedIn del responsable o vacío",
+    "potencial": "Alto | Medio | Bajo (según idoneidad para un acuerdo marco con una asociación empresarial andaluza)",
+    "observaciones": "Por qué es interesante para Asopiel en 1-2 frases"
+  }
+]
+
+Usa únicamente empresas reales y verificables. Prioriza proveedores con experiencia en acuerdos con colectivos, mutuas, asociaciones o grandes cuentas.${contexto}`;
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!response.ok) throw new Error(`Error API: ${response.status}`);
+    const data = await response.json();
+    const text = data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    clearInterval(loadingInterval);
+    proveedoresHoy = Array.isArray(result)
+      ? result.map((p, i) => ({ ...p, id: `hoy_${Date.now()}_${i}`, estado: 'Sin contactar' }))
+      : [];
+
+    document.getElementById('loadingOverlay').classList.remove('active');
+    document.getElementById('tabsContainer').style.display = 'flex';
+    switchTab('hoy');
+    updateStats();
+
+  } catch (e) {
+    clearInterval(loadingInterval);
+    document.getElementById('loadingOverlay').classList.remove('active');
+    document.getElementById('cardsGrid').innerHTML = `<div style="padding:24px;color:var(--danger);background:var(--danger-bg);border-radius:10px;border:1px solid #E0A0A0">Error al obtener proveedores. Inténtalo de nuevo.<br><small style="opacity:0.7">${e.message}</small></div>`;
+    document.getElementById('emptyState').style.display = 'none';
+  }
+}
+
+// ---- TABS ----
+function switchTab(tab) {
+  currentTab = tab;
+  ['hoy','lista','descartados'].forEach(t => {
+    const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.classList.remove('active');
+  });
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  document.getElementById('exportBar').style.display = 'none';
+  document.getElementById('exportBarDesc').style.display = 'none';
+
+  if (tab === 'hoy') {
+    document.getElementById('sectionTitle').style.display = proveedoresHoy.length ? 'block' : 'none';
+    document.getElementById('sectionTitle').textContent = `${proveedoresHoy.length} proveedores detectados — selecciona cuáles añadir a tu lista`;
+    renderCards(proveedoresHoy, 'hoy');
+  } else if (tab === 'lista') {
+    const lista = getLista();
+    document.getElementById('exportBar').style.display = lista.length ? 'flex' : 'none';
+    document.getElementById('sectionTitle').style.display = lista.length ? 'block' : 'none';
+    document.getElementById('sectionTitle').textContent = `${lista.length} proveedores en tu lista`;
+    renderCards(lista, 'lista');
+  } else {
+    const desc = getDescartados();
+    document.getElementById('exportBarDesc').style.display = desc.length ? 'flex' : 'none';
+    document.getElementById('sectionTitle').style.display = desc.length ? 'block' : 'none';
+    document.getElementById('sectionTitle').textContent = `${desc.length} proveedores descartados`;
+    renderDescartados(desc);
+  }
+}
+
+// ---- RENDER ----
+function renderCards(proveedores, modo) {
+  const grid = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyState');
+  if (!proveedores.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    if (modo === 'hoy') {
+      empty.querySelector('.empty-title').textContent = 'Selecciona una categoría y pulsa "Buscar proveedores"';
+      empty.querySelector('div:last-child').textContent = 'La IA buscará proveedores reales con potencial de acuerdo para Asopiel.';
+    } else {
+      empty.querySelector('.empty-title').textContent = modo === 'lista' ? 'Tu lista está vacía' : 'Sin proveedores descartados';
+      empty.querySelector('div:last-child').textContent = '';
+    }
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = proveedores.map(p => buildCard(p, modo)).join('');
+}
+
+function renderDescartados(proveedores) {
+  const grid = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyState');
+  if (!proveedores.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    empty.querySelector('.empty-title').textContent = 'Sin proveedores descartados';
+    empty.querySelector('div:last-child').textContent = 'Los proveedores que descartes aparecerán aquí con su motivo.';
+    return;
+  }
+  // Insight motivos frecuentes
+  const counts = {};
+  proveedores.forEach(p => { if (p.motivo_descarte) counts[p.motivo_descarte] = (counts[p.motivo_descarte] || 0) + 1; });
+  const top = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,2);
+  let insight = '';
+  if (top.length) {
+    const txt = top.map(([m,n]) => `<strong>${m}</strong> (${n})`).join(' y ');
+    insight = `<div class="insight-bar"><span class="insight-icon">💡</span><div>Motivos más frecuentes: ${txt}. Este contexto ya se usa para afinar las próximas búsquedas.</div></div>`;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = insight + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px">' + proveedores.map(p => buildCard(p, 'descartados')).join('') + '</div>';
+}
+
+function buildCard(p, modo) {
+  const initial = (p.nombre || '?')[0].toUpperCase();
+  const potClass = p.potencial === 'Alto' ? 'pot-alto' : p.potencial === 'Medio' ? 'pot-medio' : 'pot-bajo';
+
+  const webLink = p.web ? `<a href="${p.web}" target="_blank">${p.web.replace(/https?:\/\//,'').replace(/\/$/,'')}</a>` : '<span style="color:var(--text-3)">—</span>';
+  const emailLink = p.email ? `<a href="mailto:${p.email}">${p.email}</a>` : '<span style="color:var(--text-3)">—</span>';
+
+  let motivoDesc = '';
+  if (modo === 'descartados') {
+    const nota = p.nota_descarte ? `<span style="opacity:0.75"> — ${p.nota_descarte}</span>` : '';
+    motivoDesc = `<div class="card-motivo-descarte">
+      <span class="motivo-label">Motivo</span>
+      <span>${p.motivo_descarte || 'Sin especificar'}${nota}</span>
+    </div>`;
+  }
+
+  const footer = modo === 'hoy' ? `
+    <button class="btn-sm add" onclick="addToLista('${p.id}')">+ Añadir</button>
+    <button class="btn-sm discard" onclick="abrirModalDescarte('${p.id}', 'hoy')">✕ Descartar</button>
+  ` : modo === 'lista' ? `
+    <select class="estado-select" onchange="cambiarEstado('${p.id}', this.value)">
+      <option ${p.estado==='Sin contactar'?'selected':''}>Sin contactar</option>
+      <option ${p.estado==='Contacto realizado'?'selected':''}>Contacto realizado</option>
+      <option ${p.estado==='Negociando'?'selected':''}>Negociando</option>
+      <option ${p.estado==='Acuerdo firmado'?'selected':''}>Acuerdo firmado</option>
+      <option ${p.estado==='Descartado'?'selected':''}>Descartado</option>
+    </select>
+    <button class="btn-sm discard" onclick="abrirModalDescarte('${p.id}', 'lista')">✕</button>
+  ` : `
+    <button class="btn-sm add" onclick="restaurar('${p.id}')">↩ Restaurar</button>
+  `;
+
+  return `
+  <div class="prov-card" id="card_${p.id}">
+    <div class="card-header">
+      <div class="prov-initial">${initial}</div>
+      <div style="flex:1;min-width:0">
+        <div class="card-nombre">${p.nombre || '—'}</div>
+        <div class="card-sede">${p.sede || ''}${p.empresa && p.empresa !== p.nombre ? ' · ' + p.empresa : ''}</div>
+      </div>
+      <span class="cat-badge">${p.categoria || getLabelCat(catActiva)}</span>
+    </div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field-row">
+          <span class="field-label">Web</span>
+          <span class="field-value">${webLink}</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Teléfono</span>
+          <span class="field-value">${p.telefono || '—'}</span>
+        </div>
+        <div class="field-row field-full">
+          <span class="field-label">Email</span>
+          <span class="field-value">${emailLink}</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Punto fuerte</span>
+          <span class="field-value"><span class="fuerte-badge">⭐ ${p.punto_fuerte || '—'}</span></span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Potencial acuerdo</span>
+          <span class="field-value"><span class="potencial-badge ${potClass}">${p.potencial || '—'}</span></span>
+        </div>
+        <div class="field-row field-full">
+          <span class="field-label">Condiciones para colectivos</span>
+          <span class="field-value">${p.condiciones_colectivos || '—'}</span>
+        </div>
+        ${p.min_pedido ? `<div class="field-row"><span class="field-label">Mínimo pedido</span><span class="field-value">${p.min_pedido}</span></div>` : ''}
+        ${p.plazo_entrega ? `<div class="field-row"><span class="field-label">Plazo entrega</span><span class="field-value">${p.plazo_entrega}</span></div>` : ''}
+        ${p.responsable ? `<div class="field-row field-full"><span class="field-label">Responsable comercial</span><span class="field-value">${p.responsable}${p.cargo ? ' · ' + p.cargo : ''}${p.linkedin_responsable ? ' · <a href="' + p.linkedin_responsable + '" target="_blank">LinkedIn</a>' : ''}</span></div>` : ''}
+        ${p.email_responsable ? `<div class="field-row field-full"><span class="field-label">Email responsable</span><span class="field-value"><a href="mailto:${p.email_responsable}">${p.email_responsable}</a></span></div>` : ''}
+      </div>
+      ${p.observaciones ? `<div class="card-observaciones">${p.observaciones}</div>` : ''}
+      ${motivoDesc}
+    </div>
+    <div class="card-footer">${footer}</div>
+  </div>`;
+}
+
+// ---- ACCIONES LISTA ----
+function addToLista(id) {
+  const p = proveedoresHoy.find(p => p.id === id);
+  if (!p) return;
+  const lista = getLista();
+  if (lista.find(l => l.id === id)) return;
+  lista.push({ ...p, estado: 'Sin contactar' });
+  saveLista(lista);
+  const card = document.getElementById('card_' + id);
+  if (card) {
+    card.classList.add('added');
+    const btn = card.querySelector('.btn-sm.add');
+    if (btn) { btn.textContent = '✓ Añadido'; btn.disabled = true; btn.style.opacity = '0.5'; }
+  }
+  updateStats();
+}
+
+function cambiarEstado(id, estado) {
+  const lista = getLista();
+  const idx = lista.findIndex(p => p.id === id);
+  if (idx !== -1) { lista[idx].estado = estado; saveLista(lista); }
+  updateStats();
+}
+
+function restaurar(id) {
+  let desc = getDescartados();
+  desc = desc.filter(p => p.id !== id);
+  saveDescartados(desc);
+  switchTab('descartados');
+  updateStats();
+}
+
+function limpiarLista() {
+  if (confirm('¿Borrar toda la lista? Esta acción no se puede deshacer.')) {
+    saveLista([]);
+    switchTab('lista');
+    updateStats();
+  }
+}
+
+// ---- MODAL DESCARTE ----
+function abrirModalDescarte(id, origen) {
+  _motivoPendienteId = id;
+  _motivoPendienteOrigen = origen;
+  _motivoSeleccionado = null;
+  const p = origen === 'hoy'
+    ? proveedoresHoy.find(p => p.id === id)
+    : getLista().find(p => p.id === id);
+  document.getElementById('modalProvNombre').textContent = p ? p.nombre : '';
+  document.querySelectorAll('.motivo-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('motivoLibre').value = '';
+  document.getElementById('motivoLibre').style.borderColor = '';
+  document.getElementById('modalDescarte').classList.add('active');
+}
+
+function cerrarModal() {
+  document.getElementById('modalDescarte').classList.remove('active');
+  _motivoPendienteId = null;
+  _motivoSeleccionado = null;
+}
+
+function selectMotivo(btn) {
+  document.querySelectorAll('.motivo-option').forEach(el => el.classList.remove('selected'));
+  btn.classList.add('selected');
+  _motivoSeleccionado = btn.getAttribute('data-motivo');
+}
+
+let _motivoPendienteOrigen = 'hoy';
+
+function confirmarDescarte() {
+  const id = _motivoPendienteId;
+  if (!id) return;
+  const motivo = _motivoSeleccionado || '';
+  const nota = document.getElementById('motivoLibre').value.trim();
+  if (!motivo && !nota) {
+    document.getElementById('motivoLibre').style.borderColor = 'var(--danger)';
+    document.getElementById('motivoLibre').placeholder = 'Selecciona un motivo arriba o escribe aquí…';
+    document.getElementById('motivoLibre').focus();
+    return;
+  }
+  const origen = _motivoPendienteOrigen;
+  let p = origen === 'hoy' ? proveedoresHoy.find(p => p.id === id) : getLista().find(p => p.id === id);
+  if (!p) { cerrarModal(); return; }
+
+  const desc = getDescartados();
+  if (!desc.find(d => d.id === id)) {
+    desc.push({ ...p, motivo_descarte: motivo, nota_descarte: nota, fecha_descarte: new Date().toLocaleDateString('es-ES') });
+    saveDescartados(desc);
+  }
+  if (origen === 'lista') {
+    saveLista(getLista().filter(l => l.id !== id));
+  }
+  const card = document.getElementById('card_' + id);
+  if (card) { card.style.opacity = '0.3'; card.style.pointerEvents = 'none'; }
+  cerrarModal();
+  updateStats();
+  if (origen === 'lista') switchTab('lista');
+}
+
+document.getElementById('modalDescarte').addEventListener('click', function(e) { if (e.target === this) cerrarModal(); });
+
+// ---- MODAL NUEVA CATEGORIA ----
+function abrirModalCat() { document.getElementById('inputNuevaCat').value = ''; document.getElementById('modalCategoria').classList.add('active'); setTimeout(() => document.getElementById('inputNuevaCat').focus(), 150); }
+function cerrarModalCat() { document.getElementById('modalCategoria').classList.remove('active'); }
+function confirmarNuevaCat() {
+  const val = document.getElementById('inputNuevaCat').value.trim();
+  if (!val) return;
+  const id = 'custom_' + Date.now();
+  saveCatExtra({ id, label: val, grupo: 'Personalizada' });
+  catActiva = id;
+  cerrarModalCat();
+  renderCatChips();
+}
+document.getElementById('modalCategoria').addEventListener('click', function(e) { if (e.target === this) cerrarModalCat(); });
+document.getElementById('inputNuevaCat').addEventListener('keydown', function(e) { if (e.key === 'Enter') confirmarNuevaCat(); });
+
+// ---- EXPORT CSV ----
+function exportarCSV() {
+  const lista = getLista();
+  if (!lista.length) return;
+  const headers = ['Nombre','Empresa','Sede','Categoría','Web','Email','Teléfono','Punto fuerte','Condiciones colectivos','Mínimo pedido','Plazo entrega','Responsable','Cargo','Email responsable','LinkedIn responsable','Potencial','Estado','Observaciones'];
+  const keys = ['nombre','empresa','sede','categoria','web','email','telefono','punto_fuerte','condiciones_colectivos','min_pedido','plazo_entrega','responsable','cargo','email_responsable','linkedin_responsable','potencial','estado','observaciones'];
+  const csv = [headers.join(';'), ...lista.map(p => keys.map(k => '"' + (p[k] || '').toString().replace(/"/g,'""') + '"').join(';'))].join('\n');
+  descargar(csv, `asopiel_proveedores_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function exportarCSVDescartados() {
+  const desc = getDescartados();
+  if (!desc.length) return;
+  const headers = ['Nombre','Categoría','Sede','Potencial','Motivo descarte','Nota','Fecha descarte'];
+  const keys = ['nombre','categoria','sede','potencial','motivo_descarte','nota_descarte','fecha_descarte'];
+  const csv = [headers.join(';'), ...desc.map(p => keys.map(k => '"' + (p[k] || '').toString().replace(/"/g,'""') + '"').join(';'))].join('\n');
+  descargar(csv, `asopiel_descartados_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function descargar(csv, filename) {
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---- INIT ----
+function initHeader() {
+  const hoy = new Date();
+  document.getElementById('headerDate').textContent = hoy.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+initHeader();
+initData();
+renderCatChips();
+updateStats();
+</script>
+</body>
+</html>
